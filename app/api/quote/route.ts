@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { siteConfig } from '@/lib/siteConfig';
 
 /**
- * Receives quote-form submissions from <QuoteForm />.
+ * Receives quote-form submissions from <QuoteForm /> and emails them via Resend.
  *
- * BY DEFAULT it just logs to the server console and returns 200 — so the funnel
- * works out of the box on Vercel even before you configure email.
+ * Required env vars (set in Vercel → Project Settings → Environment Variables):
+ *   RESEND_API_KEY      — your Resend API key (https://resend.com)
+ *   LEADS_TO_EMAIL      — primary inbox that should receive every lead
+ *   RESEND_FROM_EMAIL   — verified "from" address (e.g. leads@allkindsrailings.com)
  *
- * To deliver leads via email, set RESEND_API_KEY + LEADS_TO_EMAIL in your Vercel
- * project settings (Settings → Environment Variables). The Resend SDK call below
- * will start working automatically.
+ * Optional:
+ *   LEADS_CC_EMAIL      — comma-separated list of CC recipients
+ *                         (e.g. "sarb@allkindsrailings.com, sales@allkindsrailings.com")
+ *   LEADS_BCC_EMAIL     — comma-separated list of BCC recipients
  *
- *   npm install resend
- *   # then uncomment the Resend block.
+ * Leads are also logged to the server console regardless of email config,
+ * so submissions are never lost.
  */
 
 export const runtime = 'nodejs';
@@ -23,6 +27,14 @@ type Body = Record<string, unknown>;
 function honeypotPassed(_body: Body) {
   // Add bot trap fields here later if spam picks up. For now, always pass.
   return true;
+}
+
+function splitList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 function formatPlainText(body: Body) {
@@ -39,14 +51,25 @@ function formatHtml(body: Body) {
   const rows = Object.entries(body)
     .map(
       ([k, v]) =>
-        `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#666;font-size:13px;text-transform:capitalize;">${k}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#111;font-size:14px;">${String(v ?? '')}</td></tr>`
+        `<tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;text-transform:capitalize;white-space:nowrap;">${escapeHtml(k)}</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#111;font-size:14px;">${escapeHtml(String(v ?? ''))}</td></tr>`
     )
     .join('');
-  return `<!doctype html><html><body style="font-family:Arial,sans-serif;background:#fafafa;padding:24px;">
-    <h2 style="color:#B0182B;margin:0 0 8px;">New Quote Request</h2>
-    <p style="color:#666;margin:0 0 16px;font-size:13px;">From ${siteConfig.url}</p>
-    <table style="border-collapse:collapse;width:100%;background:white;border:1px solid #eee;border-radius:8px;overflow:hidden;">${rows}</table>
+  return `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;background:#fafafa;padding:24px;margin:0;">
+    <div style="max-width:640px;margin:0 auto;">
+      <h2 style="color:#B0182B;margin:0 0 6px;font-family:Georgia,serif;">New Quote Request</h2>
+      <p style="color:#666;margin:0 0 18px;font-size:13px;">From <a href="${siteConfig.url}" style="color:#B0182B;text-decoration:none;">${siteConfig.url}</a></p>
+      <table style="border-collapse:collapse;width:100%;background:white;border:1px solid #eee;border-radius:8px;overflow:hidden;">${rows}</table>
+      <p style="color:#999;margin:18px 0 0;font-size:12px;">Reply directly to this email to respond to the customer.</p>
+    </div>
   </body></html>`;
+}
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 export async function POST(req: NextRequest) {
@@ -57,32 +80,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true }); // silently drop spam
     }
 
-    // ---- ALWAYS log to server output (visible in `vercel logs`) ----
+    // Always log so leads are never lost (visible via `vercel logs`).
     // eslint-disable-next-line no-console
     console.log('[quote-lead]', JSON.stringify(body, null, 2));
 
-    // ---- OPTIONAL: send email via Resend ----
-    // 1) `npm install resend`
-    // 2) Set RESEND_API_KEY + LEADS_TO_EMAIL in Vercel env vars
-    // 3) Uncomment:
-    //
-    // const { Resend } = await import('resend');
-    // const apiKey = process.env.RESEND_API_KEY;
-    // const to = process.env.LEADS_TO_EMAIL;
-    // if (apiKey && to) {
-    //   const resend = new Resend(apiKey);
-    //   await resend.emails.send({
-    //     from: `All Kinds Railings <leads@${new URL(siteConfig.url).host}>`,
-    //     to: to.split(',').map(s => s.trim()),
-    //     subject: `New quote request — ${String(body.name ?? 'Unknown')} (${String(body.city ?? '')})`,
-    //     text: formatPlainText(body),
-    //     html: formatHtml(body),
-    //     reply_to: String(body.email ?? '')
-    //   });
-    // }
+    const apiKey = process.env.RESEND_API_KEY;
+    const to = splitList(process.env.LEADS_TO_EMAIL);
+    const cc = splitList(process.env.LEADS_CC_EMAIL);
+    const bcc = splitList(process.env.LEADS_BCC_EMAIL);
+    const fromAddress =
+      process.env.RESEND_FROM_EMAIL ||
+      `All Kinds Railings <leads@${new URL(siteConfig.url).host}>`;
 
-    // Suppress unused-warnings until enabled
-    void formatPlainText; void formatHtml;
+    if (apiKey && to.length > 0) {
+      const resend = new Resend(apiKey);
+      const subject = `New quote request — ${String(body.name ?? 'Unknown')}${
+        body.city ? ` (${String(body.city)})` : ''
+      }`;
+
+      const result = await resend.emails.send({
+        from: fromAddress,
+        to,
+        cc: cc.length ? cc : undefined,
+        bcc: bcc.length ? bcc : undefined,
+        replyTo: typeof body.email === 'string' ? body.email : undefined,
+        subject,
+        text: formatPlainText(body),
+        html: formatHtml(body)
+      });
+
+      if (result.error) {
+        // eslint-disable-next-line no-console
+        console.error('[quote-lead] resend error', result.error);
+        // Don't fail the user — we already logged the lead.
+      }
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[quote-lead] email not sent — missing RESEND_API_KEY or LEADS_TO_EMAIL env var.'
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -1,6 +1,6 @@
 import { QuoteForm } from '@/components/QuoteForm';
 import { buildMetadata } from '@/lib/seo';
-import { Star, Shield, Clock, Award } from 'lucide-react';
+import { Hammer, Shield, Clock, Award } from 'lucide-react';
 
 export const metadata = buildMetadata({
   title: 'Get a Free Custom Railing Quote',
@@ -36,17 +36,10 @@ export default function QuotePage() {
               <Trust icon={<Clock className="h-5 w-5" />} title="Fast response">
                 Most quotes returned within a day, often same day. Site visits within the week.
               </Trust>
-              <Trust icon={<Star className="h-5 w-5" />} title="5-star rated">
-                Trusted by homeowners, builders and developers from Vancouver to Kelowna.
+              <Trust icon={<Hammer className="h-5 w-5" />} title="Trusted across the Lower Mainland">
+                Homeowners, builders and developers from Vancouver to Kelowna — and parts of Washington State.
               </Trust>
             </ul>
-
-            <div className="mt-10 hidden lg:block p-6 rounded-xl bg-white border border-brand-brown-soft">
-              <p className="text-sm italic text-gray-700">
-                “Sarb and his team built the frameless glass railing on our deck and I cannot believe how clean the finish is. Would absolutely hire again.”
-              </p>
-              <p className="mt-3 text-xs font-semibold text-brand-ink">— Jaspreet K., South Surrey</p>
-            </div>
           </div>
 
           {/* Right: form */}

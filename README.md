@@ -49,20 +49,29 @@ These flow into the header, footer, contact page, JSON-LD schema, sitemap, and q
 
 ## 4. Hook up the quote-form email delivery
 
-The form already works — every submission is logged to `vercel logs`. To get emailed leads:
-
-```bash
-npm install resend
-```
-
-Then in Vercel → Project Settings → Environment Variables, add:
+`resend` is already installed and wired up in `app/api/quote/route.ts`. You just need to set environment variables in Vercel → Project Settings → Environment Variables:
 
 ```
 RESEND_API_KEY=re_xxxxxxxxxxxx
 LEADS_TO_EMAIL=quotes@allkindsrailings.com
+RESEND_FROM_EMAIL=All Kinds Railings <leads@allkindsrailings.com>
+
+# Optional — comma-separated lists if you want extra recipients:
+LEADS_CC_EMAIL=sarb@allkindsrailings.com, sales@allkindsrailings.com
+LEADS_BCC_EMAIL=
 ```
 
-Open **`app/api/quote/route.ts`** and uncomment the Resend block (it's clearly marked). Redeploy.
+**How CC/BCC work:**
+- Every lead is sent to `LEADS_TO_EMAIL` (the primary inbox)
+- Every email in `LEADS_CC_EMAIL` (comma-separated) is added to the CC line — they'll see who else got it
+- Every email in `LEADS_BCC_EMAIL` is blind-copied — useful for forwarding to a CRM or personal archive
+
+**Get a Resend API key:**
+1. Sign up at <https://resend.com> (free tier covers ~3,000 emails/month)
+2. Add your domain (e.g. `allkindsrailings.com`), verify DNS records (TXT/MX they'll show you)
+3. Create an API key and paste it into Vercel as `RESEND_API_KEY`
+
+**Even without email:** every submission is logged to `vercel logs` and the user still sees the thank-you page. Leads are never lost.
 
 **Alternatives** (if you prefer not to use Resend):
 - **Formspree / Web3Forms** — replace the `fetch('/api/quote', ...)` call in `components/QuoteForm.tsx` with their endpoint
@@ -90,17 +99,18 @@ The site automatically:
 - For broader awareness campaigns, send to **`/`** (landing has the embedded form above the fold)
 - For city-targeted campaigns (e.g. "custom railings Coquitlam"), send to the matching **`/service-areas/[city]`** page
 
-## 6. Upload your gallery images
+## 6. Gallery images
 
-You mentioned you have 5,000+ project photos. Here's the workflow:
+The site ships with **56 real project photos** at `public/images/gallery/project-01.jpg` through `project-56.jpg`, automatically displayed across the site:
 
-1. Drop your best 30-60 photos into `public/images/gallery/`
-   - Use descriptive filenames: `glass-deck-southsurrey-01.jpg`
-   - 1600×1200 (4:3) is ideal; under 400KB each
-2. Open `components/GalleryGrid.tsx` and either edit the placeholder array or pass items via props
-3. For per-city galleries, create `lib/galleryByCity.ts` mapping city slugs to image arrays — then pass them into `app/service-areas/[city]/page.tsx`
+- `/gallery` shows all 56
+- `/` (landing) shows a 12-photo teaser
+- Each `/service-areas/<city>` page shows a 12-photo subset seeded by the city slug, so every city page is visually unique (helps SEO uniqueness scoring)
 
-See `public/images/gallery/README.md` for full details.
+**To add more photos:**
+1. Drop them in `public/images/gallery/` as `project-NN.jpg` (next sequential numbers)
+2. Bump the `TOTAL` constant in `lib/gallery.ts`
+3. Commit + push — Vercel rebuilds automatically
 
 **Tip:** Vercel automatically optimizes images via Next.js `<Image>` (AVIF/WebP, lazy loading, responsive sizes). You don't need to pre-optimize beyond reasonable compression.
 

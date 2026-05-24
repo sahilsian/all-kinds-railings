@@ -89,11 +89,8 @@ export function localBusinessJsonLd() {
     areaServed: siteConfig.serviceArea.map(a => ({ '@type': 'City', name: a })),
     sameAs: Object.values(siteConfig.social),
     priceRange: '$$–$$$',
-    image: `${siteConfig.url}${siteConfig.ogImage}`,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '5.0',
-      reviewCount: '127'
-    }
+    image: `${siteConfig.url}${siteConfig.ogImage}`
+    // NOTE: aggregateRating intentionally omitted. Add it back once real review
+    // counts and ratings are available — Google penalises invented rating data.
   };
 }

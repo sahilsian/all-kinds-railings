@@ -4,7 +4,6 @@ import { QuoteForm } from '@/components/QuoteForm';
 import { TrustBar } from '@/components/TrustBar';
 import { ServicesGrid } from '@/components/ServicesGrid';
 import { GalleryGrid } from '@/components/GalleryGrid';
-import { Testimonials } from '@/components/Testimonials';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import { CTABanner } from '@/components/CTABanner';
 import { cities } from '@/lib/cities';
@@ -85,6 +84,22 @@ export default function HomePage() {
       {/* ============ TRUST BAR ============ */}
       <TrustBar />
 
+      {/* ============ GALLERY TEASER (moved above services) ============ */}
+      <section className="section bg-subtle-red">
+        <div className="container-wide">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+            <div>
+              <span className="eyebrow">Recent work</span>
+              <h2 className="heading-lg text-brand-ink mt-3">5,000+ projects. No two alike.</h2>
+            </div>
+            <Link href="/gallery" className="btn-secondary">
+              View full gallery <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <GalleryGrid limit={12} />
+        </div>
+      </section>
+
       {/* ============ SERVICES ============ */}
       <section className="section">
         <div className="container-wide">
@@ -160,7 +175,7 @@ export default function HomePage() {
               <div className="mt-8 grid grid-cols-3 gap-3 text-center">
                 <KPI value="30+" label="Years" />
                 <KPI value="5,000+" label="Projects" />
-                <KPI value="5.0★" label="Avg rating" />
+                <KPI value="Lower Mainland" label="Coverage" />
               </div>
             </div>
           </div>
@@ -189,34 +204,6 @@ export default function HomePage() {
               Our crew arrives on schedule, builds clean, and leaves your site spotless.
             </Step>
           </div>
-        </div>
-      </section>
-
-      {/* ============ GALLERY TEASER ============ */}
-      <section className="section bg-subtle-red">
-        <div className="container-wide">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
-            <div>
-              <span className="eyebrow">Recent work</span>
-              <h2 className="heading-lg text-brand-ink mt-3">5,000+ projects. No two alike.</h2>
-            </div>
-            <Link href="/gallery" className="btn-secondary">
-              View full gallery <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <GalleryGrid limit={8} />
-        </div>
-      </section>
-
-      {/* ============ TESTIMONIALS ============ */}
-      <section className="section">
-        <div className="container-wide">
-          <div className="max-w-2xl mb-12">
-            <span className="eyebrow">What clients say</span>
-            <h2 className="heading-lg text-brand-ink mt-3">A reputation built one home at a time.</h2>
-            <div className="accent-rule mt-5" />
-          </div>
-          <Testimonials />
         </div>
       </section>
 

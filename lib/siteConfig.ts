@@ -13,10 +13,9 @@ export const siteConfig = {
   ogImage: '/images/og-default.jpg',
 
   // ---- CONTACT ----
-  // TODO: swap these placeholders for the real numbers/emails.
-  phone: '(604) 555-0188',
-  phoneHref: 'tel:+16045550188',
-  email: 'quotes@allkindsrailings.com',
+  phone: '(604) 725-3132',
+  phoneHref: 'tel:+16047253132',
+  email: 'quotes@allkindsrailings.com', // TODO: confirm real inbox before launch
   emailHref: 'mailto:quotes@allkindsrailings.com',
 
   address: {

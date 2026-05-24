@@ -1,24 +1,23 @@
 # Gallery Images
 
-Drop your real project photos in this folder.
+This folder contains **56 real project photos** named `project-01.jpg` through `project-56.jpg`.
+All photos are wired into the site automatically via `lib/gallery.ts` — no further setup needed.
 
-**Recommended:**
-- 1600×1200 (4:3) or 1600×1067 (3:2) source files
-- JPG or WebP, under 400KB each (Next.js will further optimize at build)
-- Use descriptive filenames: `glass-deck-southsurrey-01.jpg`, `wood-staircase-langley-03.jpg`
+## Where they show up
 
-**Wiring images into the gallery:**
+- `/gallery` — full gallery, all 56 photos
+- `/` (landing page) — 12-photo teaser in the "Recent work" section
+- `/service-areas/<city>` — 12-photo subset per city, seeded by the city slug
+  so each city page shows a different deterministic mix (good for SEO uniqueness)
 
-Open `components/GalleryGrid.tsx` and edit the `placeholders` array — or pass real items
-via the `items={[...]}` prop:
+## To add more photos
 
-```tsx
-<GalleryGrid items={[
-  { src: '/images/gallery/glass-deck-southsurrey-01.jpg', alt: 'Frameless glass deck — South Surrey', span: 'tall' },
-  { src: '/images/gallery/wood-staircase-langley-03.jpg', alt: 'Custom wood staircase — Langley' },
-  // ...
-]} />
-```
+1. Drop a new file in this folder named `project-NN.jpg` (next sequential number)
+2. Open `lib/gallery.ts` and bump the `TOTAL` constant
+3. Commit and push — Vercel rebuilds and your new photos appear
 
-For the city-specific galleries, you can later make a `galleryByCity` map keyed off the city slug
-and pass the right subset into each `/service-areas/[city]/page.tsx`.
+## To categorize photos (optional future work)
+
+If you want photos tagged by material (glass/wood/metal) or city, edit
+`lib/gallery.ts` to add `category` or `city` fields on each item, then filter
+in the relevant pages.

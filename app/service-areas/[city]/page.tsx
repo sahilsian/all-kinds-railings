@@ -7,7 +7,6 @@ import { siteConfig } from '@/lib/siteConfig';
 import { buildMetadata } from '@/lib/seo';
 import { QuoteForm } from '@/components/QuoteForm';
 import { GalleryGrid } from '@/components/GalleryGrid';
-import { Testimonials } from '@/components/Testimonials';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import { CTABanner } from '@/components/CTABanner';
 
@@ -143,15 +142,8 @@ export default function CityPage({ params }: { params: Params }) {
       <section className="section bg-subtle-red">
         <div className="container-wide">
           <h2 className="heading-md text-brand-ink mb-6">Recent work near {c.name}</h2>
-          <GalleryGrid limit={8} />
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="section">
-        <div className="container-wide">
-          <h2 className="heading-md text-brand-ink mb-8">Trusted by {c.name} homeowners & builders</h2>
-          <Testimonials />
+          {/* Seed by slug length so each city page shows a different mix */}
+          <GalleryGrid limit={12} seed={c.slug.length * 3 + c.slug.charCodeAt(0)} />
         </div>
       </section>
 
