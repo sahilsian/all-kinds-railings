@@ -10,8 +10,8 @@ import { siteConfig } from '@/lib/siteConfig';
  * Required env vars (set in Vercel → Project Settings → Environment Variables):
  *
  *   RESEND_API_KEY       — from resend.com
- *   LEADS_TO_EMAIL       — primary inbox (e.g. info@allkindsrailings.com)
- *   RESEND_FROM_EMAIL    — verified sender (e.g. leads@allkindsrailings.com)
+ *   LEADS_TO_EMAIL       — primary inbox (e.g. info@allkindsrailings.ca)
+ *   RESEND_FROM_EMAIL    — verified sender (e.g. leads@allkindsrailings.ca)
  *   LEADS_SMS_EMAIL      — carrier gateway address (e.g. 6047253132@msg.telus.com)
  *
  * Optional:
@@ -103,12 +103,12 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(apiKey);
 
     // ── SMS via Telus email-to-SMS gateway (free) ────────────────────────────
-    const smsEmail = process.env.LEADS_SMS_EMAIL;
-    if (smsEmail) {
+    const smsRecipients = splitList(process.env.LEADS_SMS_EMAIL);
+    if (smsRecipients.length > 0) {
       try {
         await resend.emails.send({
           from: fromAddress,
-          to: [smsEmail],
+          to: smsRecipients,
           subject: 'Lead',
           text: formatSms(body)
         });

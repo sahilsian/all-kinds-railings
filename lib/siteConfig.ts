@@ -9,14 +9,14 @@ export const siteConfig = {
   description:
     'All Kinds Railings is a family-owned Surrey, BC contractor specializing in custom residential and commercial railings in wood, glass, and metal. Over 30 years of craftsmanship and 5,000+ completed projects across the Lower Mainland.',
   // TODO: replace with the real production domain before deploying
-  url: 'https://www.allkindsrailings.com',
+  url: 'https://www.allkindsrailings.ca',
   ogImage: '/images/og-default.jpg',
 
   // ---- CONTACT ----
   phone: '(604) 725-3132',
   phoneHref: 'tel:+16047253132',
-  email: 'quotes@allkindsrailings.com', // TODO: confirm real inbox before launch
-  emailHref: 'mailto:quotes@allkindsrailings.com',
+  email: 'quotes@allkindsrailings.ca',
+  emailHref: 'mailto:quotes@allkindsrailings.ca',
 
   address: {
     street: 'Surrey, British Columbia',
