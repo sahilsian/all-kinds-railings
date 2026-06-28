@@ -22,7 +22,7 @@ export const services: Service[] = [
       'Ideal for ocean and mountain view decks'
     ],
     bestFor: 'Modern homes, view decks, rooftop patios, commercial entries.',
-    image: '/images/services/glass-railing.jpg'
+    image: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format&fit=crop&q=80'
   },
   {
     slug: 'wood-railings',
@@ -37,7 +37,7 @@ export const services: Service[] = [
       'Heritage and classic-home matching'
     ],
     bestFor: 'Custom homes, character renovations, interior staircases, covered decks.',
-    image: '/images/services/wood-railing.jpg'
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80'
   },
   {
     slug: 'metal-railings',
@@ -52,7 +52,7 @@ export const services: Service[] = [
       'Welded on-site for perfect fit'
     ],
     bestFor: 'Acreages, commercial sites, modern picket designs, classic ornamental work.',
-    image: '/images/services/metal-railing.jpg'
+    image: 'https://images.unsplash.com/photo-1547226706-8bbf33d12520?w=800&auto=format&fit=crop&q=80'
   },
   {
     slug: 'floating-glass',
@@ -67,7 +67,7 @@ export const services: Service[] = [
       'Edge polishing for a finished, premium look'
     ],
     bestFor: 'Luxury homes, view-preserving decks, modern architectural projects.',
-    image: '/images/services/floating-glass.jpg'
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80'
   },
   {
     slug: 'commercial-railings',
@@ -82,7 +82,7 @@ export const services: Service[] = [
       'Strict scheduling for general contractors'
     ],
     bestFor: 'GCs, developers, strata renovations, commercial tenant improvements.',
-    image: '/images/services/commercial-railing.jpg'
+    image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&auto=format&fit=crop&q=80'
   },
   {
     slug: 'staircase-railings',
@@ -97,7 +97,7 @@ export const services: Service[] = [
       'On-site fitting for perfect geometry'
     ],
     bestFor: 'Custom home staircases, renovations, statement entries.',
-    image: '/images/services/staircase-railing.jpg'
+    image: 'https://images.unsplash.com/photo-1562184552-997c461bedd3?w=800&auto=format&fit=crop&q=80'
   }
 ];
 

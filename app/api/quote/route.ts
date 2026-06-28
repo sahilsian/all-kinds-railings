@@ -3,20 +3,20 @@ import { Resend } from 'resend';
 import { siteConfig } from '@/lib/siteConfig';
 
 /**
- * Receives quote-form submissions from <QuoteForm /> and emails them via Resend.
+ * Receives quote-form submissions and:
+ *   1. Texts the lead details via email-to-SMS (Telus gateway, free)
+ *   2. Emails the full lead via Resend
  *
  * Required env vars (set in Vercel → Project Settings → Environment Variables):
- *   RESEND_API_KEY      — your Resend API key (https://resend.com)
- *   LEADS_TO_EMAIL      — primary inbox that should receive every lead
- *   RESEND_FROM_EMAIL   — verified "from" address (e.g. leads@allkindsrailings.com)
+ *
+ *   RESEND_API_KEY       — from resend.com
+ *   LEADS_TO_EMAIL       — primary inbox (e.g. info@allkindsrailings.com)
+ *   RESEND_FROM_EMAIL    — verified sender (e.g. leads@allkindsrailings.com)
+ *   LEADS_SMS_EMAIL      — carrier gateway address (e.g. 6047253132@msg.telus.com)
  *
  * Optional:
- *   LEADS_CC_EMAIL      — comma-separated list of CC recipients
- *                         (e.g. "sarb@allkindsrailings.com, sales@allkindsrailings.com")
- *   LEADS_BCC_EMAIL     — comma-separated list of BCC recipients
- *
- * Leads are also logged to the server console regardless of email config,
- * so submissions are never lost.
+ *   LEADS_CC_EMAIL       — comma-separated CC addresses
+ *   LEADS_BCC_EMAIL      — comma-separated BCC addresses
  */
 
 export const runtime = 'nodejs';
@@ -25,16 +25,21 @@ export const dynamic = 'force-dynamic';
 type Body = Record<string, unknown>;
 
 function honeypotPassed(_body: Body) {
-  // Add bot trap fields here later if spam picks up. For now, always pass.
   return true;
 }
 
 function splitList(value: string | undefined): string[] {
   if (!value) return [];
-  return value
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+  return value.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function formatSms(body: Body): string {
+  const name  = String(body.name  ?? 'Unknown');
+  const phone = String(body.phone ?? '-');
+  const email = String(body.email ?? '-');
+  const city  = body.city ? ` | ${String(body.city)}` : '';
+  const mat   = body.material ? ` | ${String(body.material)}` : '';
+  return `NEW LEAD\n${name}\n${phone}\n${email}${city}${mat}`;
 }
 
 function formatPlainText(body: Body) {
@@ -77,7 +82,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as Body;
 
     if (!honeypotPassed(body)) {
-      return NextResponse.json({ ok: true }); // silently drop spam
+      return NextResponse.json({ ok: true });
     }
 
     // Always log so leads are never lost (visible via `vercel logs`).
@@ -85,15 +90,40 @@ export async function POST(req: NextRequest) {
     console.log('[quote-lead]', JSON.stringify(body, null, 2));
 
     const apiKey = process.env.RESEND_API_KEY;
-    const to = splitList(process.env.LEADS_TO_EMAIL);
-    const cc = splitList(process.env.LEADS_CC_EMAIL);
-    const bcc = splitList(process.env.LEADS_BCC_EMAIL);
     const fromAddress =
       process.env.RESEND_FROM_EMAIL ||
       `All Kinds Railings <leads@${new URL(siteConfig.url).host}>`;
 
-    if (apiKey && to.length > 0) {
-      const resend = new Resend(apiKey);
+    if (!apiKey) {
+      // eslint-disable-next-line no-console
+      console.warn('[quote-lead] email not sent — missing RESEND_API_KEY.');
+      return NextResponse.json({ ok: true });
+    }
+
+    const resend = new Resend(apiKey);
+
+    // ── SMS via Telus email-to-SMS gateway (free) ────────────────────────────
+    const smsEmail = process.env.LEADS_SMS_EMAIL;
+    if (smsEmail) {
+      try {
+        await resend.emails.send({
+          from: fromAddress,
+          to: [smsEmail],
+          subject: 'Lead',
+          text: formatSms(body)
+        });
+      } catch (smsErr) {
+        // eslint-disable-next-line no-console
+        console.error('[quote-lead] sms email error', smsErr);
+      }
+    }
+
+    // ── Full lead email ──────────────────────────────────────────────────────
+    const to  = splitList(process.env.LEADS_TO_EMAIL);
+    const cc  = splitList(process.env.LEADS_CC_EMAIL);
+    const bcc = splitList(process.env.LEADS_BCC_EMAIL);
+
+    if (to.length > 0) {
       const subject = `New quote request — ${String(body.name ?? 'Unknown')}${
         body.city ? ` (${String(body.city)})` : ''
       }`;
@@ -112,13 +142,10 @@ export async function POST(req: NextRequest) {
       if (result.error) {
         // eslint-disable-next-line no-console
         console.error('[quote-lead] resend error', result.error);
-        // Don't fail the user — we already logged the lead.
       }
     } else {
       // eslint-disable-next-line no-console
-      console.warn(
-        '[quote-lead] email not sent — missing RESEND_API_KEY or LEADS_TO_EMAIL env var.'
-      );
+      console.warn('[quote-lead] no LEADS_TO_EMAIL set — skipping inbox email.');
     }
 
     return NextResponse.json({ ok: true });
