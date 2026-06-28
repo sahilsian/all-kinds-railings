@@ -63,9 +63,9 @@ export const siteConfig = {
   // ---- ANALYTICS ----
   // Replace with real IDs when ready. Empty strings will skip script injection.
   analytics: {
-    googleAdsId: '',          // e.g. 'AW-1234567890'
+    googleAdsId: 'AW-18279896028',
     googleAnalyticsId: '',    // e.g. 'G-XXXXXXXXXX'
-    googleConversionLabel: '',// e.g. 'abcDEF-GHi123' for the lead conversion
+    googleConversionLabel: 'dV45CITKpsccENynxIxE',
     metaPixelId: ''           // e.g. '1234567890123456'
   },
 
